@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { react, useState } from 'react'
+import Header from './components/Header'
+import Main from './components/Main'
+
 import './App.css'
 
 function App() {
   return (
     <>
-      <h1>Hello, Vite + React!</h1>
+      <Header />
+      <Main />
     </>
   )
 }
