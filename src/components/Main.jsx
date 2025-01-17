@@ -1,26 +1,20 @@
+import { React, useState } from "react"
+
 export default function Main() {
-    // SWAP THIS TO USE STATE INSTEAD OF VANILLA JS VARIABLES
-    const ingredients = ["Chicken", "Oregano", "Tomatoes"]
+    const [ingredients, setIngredients] = useState([])
 
     const ingredientsListItems = ingredients.map(ingredient => (
         <li key={ingredient}>{ingredient}</li>
     ))
 
-
-    function handleSubmit(event) {
-        event.preventDefault()
-        const formData = new FormData(event.currentTarget)
+    function addIngredient(formData) {
         const newIngredient = formData.get("ingredient")
-
-        console.log(ingredients);
-        ingredients.push(newIngredient);
-        console.log(ingredients);
-
+        setIngredients( prevIngredients => [...prevIngredients, newIngredient])
     }
 
     return (
         <main>
-            <form onSubmit={handleSubmit} className="add-ingredient-form">
+            <form action={addIngredient} className="add-ingredient-form">
                 <input
                     type="text"
                     placeholder="e.g. oregano"
@@ -35,3 +29,4 @@ export default function Main() {
         </main>
     )
 }
+
