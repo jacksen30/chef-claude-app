@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 export async function handler(event) {
     if (event.httpMethod !== 'POST') {
         return {
@@ -6,20 +8,12 @@ export async function handler(event) {
         };
     }
 
-    let ingredientsArr;
+    const { ingredientsArr } = JSON.parse(event.body);
 
-    try {
-        // ✅ Safely parse the request body to avoid "undefined" errors
-        const requestBody = JSON.parse(event.body || "{}");
-        ingredientsArr = requestBody.ingredientsArr;
-
-        if (!ingredientsArr || !Array.isArray(ingredientsArr)) {
-            throw new Error("Invalid or missing 'ingredientsArr' in request.");
-        }
-    } catch (error) {
+    if (!ingredientsArr || !Array.isArray(ingredientsArr)) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: "Invalid request body", details: error.message }),
+            body: JSON.stringify({ error: "Invalid ingredients input" }),
         };
     }
 
@@ -48,14 +42,9 @@ export async function handler(event) {
 
         const data = await response.json();
 
-        // ✅ Check if `content` exists and has at least one item
-        if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
-            throw new Error("Unexpected API response format: Missing 'content' in response.");
-        }
-
         return {
             statusCode: 200,
-            body: JSON.stringify({ recipe: data.content[0].text || "No recipe found." }),
+            body: JSON.stringify({ recipe: data.content[0].text }),
         };
     } catch (error) {
         return {
