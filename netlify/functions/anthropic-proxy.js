@@ -9,7 +9,7 @@ export async function handler(event) {
     }
 
     const { ingredientsArr } = JSON.parse(event.body);
-    
+
     if (!ingredientsArr || !Array.isArray(ingredientsArr)) {
         return {
             statusCode: 400,
