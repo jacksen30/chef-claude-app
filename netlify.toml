@@ -1,2 +1,6 @@
+[dev]
+  targetPort = 3000  # Tell Netlify Dev that Vite runs on port 3000
+  framework = "vite"
+
 [functions]
   directory = "netlify/functions"
