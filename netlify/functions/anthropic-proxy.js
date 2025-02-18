@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 export async function handler(event) {
     if (event.httpMethod !== 'POST') {
         return {
@@ -7,9 +9,7 @@ export async function handler(event) {
     }
 
     let ingredientsArr;
-
     try {
-        // ✅ Safely parse the request body to avoid "undefined" errors
         const requestBody = JSON.parse(event.body || "{}");
         ingredientsArr = requestBody.ingredientsArr;
 
@@ -48,9 +48,15 @@ export async function handler(event) {
 
         const data = await response.json();
 
-        // ✅ Check if `content` exists and has at least one item
+        // ✅ Debugging: Log full API response in Netlify logs
+        console.log("Anthropic API Response:", JSON.stringify(data, null, 2));
+
+        // ✅ Check if `data.content` exists and is an array
         if (!data.content || !Array.isArray(data.content) || data.content.length === 0) {
-            throw new Error("Unexpected API response format: Missing 'content' in response.");
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ error: "Unexpected API response format", fullResponse: data }),
+            };
         }
 
         return {
