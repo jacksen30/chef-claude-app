@@ -1,61 +1,101 @@
-// netlify/functions/anthropic-proxy.js
-require('dotenv').config();
+export async function handler(event) {
+    console.log("=== Anthropc-proxy function invoked ===");
 
-exports.handler = async (event) => {
-  // Add logs at the start to confirm the function *is* invoked
-  console.log('=== Function anthropic-proxy invoked ===');
-  console.log('EVENT:', event);
-
-  try {
-    console.log('Parsing event.body...');
-    const body = JSON.parse(event.body || '{}');
-    console.log('Parsed body:', body);
-
-    // Check your env variable here
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      throw new Error('Missing ANTHROPIC_API_KEY environment variable');
-    }
-
-    console.log('Calling Claude API...');
-    const response = await fetch('https://api.anthropic.com/v1/complete', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': apiKey,
-      },
-      body: JSON.stringify({
-        prompt: body.prompt || 'Hello Claude!',
-        model: 'claude-instant-v1',
-        max_tokens_to_sample: 100,
-        temperature: 0.7,
-      }),
+    console.log("Event received:", {
+      httpMethod: event.httpMethod,
+      body: event.body,
     });
 
-    if (!response.ok) {
-      // Log the error response text for debugging
-      const errorText = await response.text();
-      console.error('Claude API responded with an error:', errorText);
-
+    // Check method
+    if (event.httpMethod !== 'POST') {
+      console.log("Method not allowed:", event.httpMethod);
       return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: errorText }),
+        statusCode: 405,
+        body: JSON.stringify({ error: "Method Not Allowed" }),
       };
     }
 
-    const data = await response.json();
-    console.log('Claude response data:', data);
+    // Parse request body
+    let ingredientsArr;
+    try {
+      const parsedBody = JSON.parse(event.body);
+      ingredientsArr = parsedBody.ingredientsArr;
+      console.log("Parsed ingredientsArr:", ingredientsArr);
+    } catch (parseError) {
+      console.error("Error parsing JSON body:", parseError);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Invalid JSON body" }),
+      };
+    }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify(data),
-    };
-  } catch (err) {
-    // Always log the error so it shows in Netlify's function logs
-    console.error('Caught error in Netlify function:', err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
-    };
+    // Validate ingredients array
+    if (!ingredientsArr || !Array.isArray(ingredientsArr)) {
+      console.error("Invalid ingredientsArr:", ingredientsArr);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: "Invalid ingredients input" }),
+      };
+    }
+
+    const SYSTEM_PROMPT = `
+      You are an assistant that receives a list of ingredients that a user has and suggests a recipe they could make with some or all of those ingredients.
+      The recipe can include additional ingredients, but try not to include too many extras.
+      Format your response in markdown to make it easier to render on a webpage.
+    `;
+
+    console.log("Checking ANTHROPIC_API_KEY presence...");
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error("Missing ANTHROPIC_API_KEY environment variable!");
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "Missing API key" }),
+      };
+    }
+
+    try {
+      console.log("Making fetch request to Claude API...");
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY, // Securely stored in Netlify
+        },
+        body: JSON.stringify({
+          model: "claude-3-haiku-20240307",
+          max_tokens: 1024,
+          system: SYSTEM_PROMPT,
+          messages: [
+            { role: "user", content: `I have ${ingredientsArr.join(", ")}. Please give me a recipe!` },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Claude API error:", response.status, errorText);
+        return {
+          statusCode: response.status,
+          body: JSON.stringify({ error: errorText }),
+        };
+      }
+
+      const data = await response.json();
+      console.log("Claude API response data:", data);
+
+      // Just in case the shape of the data changes, handle safely:
+      const recipeText = data?.content?.[0]?.text || "No recipe found.";
+      console.log("Returning recipe:", recipeText);
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ recipe: recipeText }),
+      };
+    } catch (error) {
+      console.error("Error during Claude API call:", error);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "Internal Server Error", details: error.message }),
+      };
+    }
   }
-};
