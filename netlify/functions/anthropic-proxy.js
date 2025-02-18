@@ -60,6 +60,7 @@ export async function handler(event) {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': process.env.ANTHROPIC_API_KEY, // Securely stored in Netlify
+          'anthropic-version': '2023-06-01',  // Keep updated to latest version
         },
         body: JSON.stringify({
           model: "claude-3-haiku-20240307",
