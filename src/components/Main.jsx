@@ -33,7 +33,7 @@ export default function Main() {
             </form>
             {ingredients.length > 0 ? <IngredientsList ingredients={ingredients} getRecipe={getRecipe} /> : null }
 
-            {recipe ? <ClaudeRecipe /> : null}
+            {recipe ? <ClaudeRecipe recipe={recipe} /> : null}
         </main>
     )
 }
