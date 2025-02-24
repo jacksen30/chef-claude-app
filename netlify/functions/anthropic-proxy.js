@@ -1,3 +1,17 @@
+/*
+ * Serverless function to generate a recipe using Claude AI.
+ *
+ * This function acts as a proxy between the client and the Claude AI API.
+ * It receives an array of ingredients via a POST request, forwards the request
+ * to the AI model, and returns a generated recipe response.
+ *
+ * The function is deployed on Netlify and accessible via `/.netlify/functions/anthropic-proxy`.
+ * It ensures proper error handling and response validation to maintain API reliability.
+ *
+ * @param {Request} req - The incoming HTTP request object (expects JSON with `ingredientsArr`).
+ * @returns {Response} A JSON response containing the generated recipe or an error message.
+ */
+
 export async function handler(event) {
     console.log("=== Anthropc-proxy function invoked ===");
 
