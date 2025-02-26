@@ -2,6 +2,12 @@
   box-sizing: border-box;
 }
 
+#root {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
 body {
   margin: 0;
   font-family: Inter, sans-serif;
@@ -78,7 +84,7 @@ ul.ingredients-list > li {
   align-items: center;
   border-radius: 8px;
   background: #F0EFEB;
-  padding: 10px px;
+  padding: 5px 10px;
 }
 
 .get-recipe-container h3 {
@@ -99,8 +105,9 @@ ul.ingredients-list > li {
   background: #D17557;
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
   color: #FAFAF8;
-  padding: 9px 17px;
+  padding: 9px 13px;
   font-family: Inter, sans-serif;
-  font-size: 0.875rem;
+  /* font-size: 0.875rem; */
+  font-size: 1rem;
   cursor: pointer;
 }
