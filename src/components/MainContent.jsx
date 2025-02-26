@@ -10,14 +10,18 @@ export default function Main() {
 
     const [recipe, setRecipe] = useState(false)
 
+    const [recipeLoading, setRecipeLoading] = useState(false)
+
     function addIngredient(formData) {
         const newIngredient = formData.get("ingredient")
         setIngredients( prevIngredients => [...prevIngredients, newIngredient])
     }
 
     async function getRecipe() {
+        setRecipeLoading(true)
         const recipeMarkdown = await getRecipeFromChefClaude(ingredients)
         setRecipe(recipeMarkdown)
+        setRecipeLoading(false)
     }
 
     return (
@@ -34,6 +38,7 @@ export default function Main() {
             {ingredients.length > 0 ? <IngredientsList ingredients={ingredients} getRecipe={getRecipe} /> : null }
 
             {recipe ? <ClaudeRecipe recipe={recipe} /> : null}
+            {recipeLoading ? <p>Loading recipe...</p> : null}
         </main>
     )
 }
