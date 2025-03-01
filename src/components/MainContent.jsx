@@ -5,6 +5,8 @@ import ClaudeRecipe from "./ClaudeRecipe"
 
 import getRecipeFromChefClaude from "../ai"
 
+import LoadingAnimation from "./LoadingAnimation"
+
 export default function Main() {
     const [ingredients, setIngredients] = useState([])
 
@@ -37,8 +39,8 @@ export default function Main() {
             </form>
             {ingredients.length > 0 ? <IngredientsList ingredients={ingredients} getRecipe={getRecipe} /> : null }
 
+            {recipeLoading ? <LoadingAnimation /> : null}
             {recipe ? <ClaudeRecipe recipe={recipe} /> : null}
-            {recipeLoading ? <p>Loading recipe...</p> : null}
         </main>
     )
 }
